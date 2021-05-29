@@ -1,2 +1,0 @@
-# batch_get_item is like get_item - if table has both partition key and sort key then we need to
-  specify both of the keys to get item/s.
