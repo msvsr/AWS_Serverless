@@ -4,11 +4,18 @@ READ
 1. Reading specific item
 2. Reading all the items
 UPDATE
+1. Adding new employee to store
+2. Adding new Product to store
+3. Adding new Product in all stores
+4. Increasing quantity for particular prodcut in particular store.
+5. Increasing quantity for particular product in all stores.
+6. Decreasing quantity for particular product in particular store.
 DELETE
 """
 
 import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+import botocore
 
 
 def convert_to_dynamodb_format(data):
@@ -103,7 +110,73 @@ def read_all_the_items_scan(table, attributes=None, filter_condition=None, attri
     return [convert_to_python_format(item.items()) for item in response.get('Items')]
 
 
-if __name__ == '__main__':
+def read_using_execute_statement(statement, parameters=None):
+    if parameters is None:
+        parameters = {}
+
+    dynamodb = boto3.client('dynamodb')
+
+    response = {}
+
+    if statement and parameters:
+        response = dynamodb.execute_statement(Statement=statement, Parameters=parameters)
+    elif statement:
+        response = dynamodb.execute_statement(Statement=statement)
+    return response
+
+
+def update_using_update_item(table_name, key, update_expression, condition_expression=None, exp_attribute_names=None,
+                             exp_attribute_values=None):
+    if exp_attribute_values is None:
+        exp_attribute_values = []
+    if exp_attribute_names is None:
+        exp_attribute_names = {}
+    if condition_expression is None:
+        condition_expression = []
+
+    dynamodb = boto3.client('dynamodb')
+
+    if condition_expression and exp_attribute_names and exp_attribute_values:
+        response = dynamodb.update_item(TableName=table_name, Key=key,
+                                        UpdateExpression=update_expression,
+                                        ConditionExpression=condition_expression,
+                                        ExpressionAttributeNames=exp_attribute_names,
+                                        ExpressionAttributeValues=exp_attribute_values)
+
+    elif condition_expression and exp_attribute_names:
+        response = dynamodb.update_item(TableName=table_name, Key=key,
+                                        UpdateExpression=update_expression,
+                                        ConditionExpression=condition_expression,
+                                        ExpressionAttributeNames=exp_attribute_names)
+
+    elif condition_expression and exp_attribute_values:
+        response = dynamodb.update_item(TableName=table_name, Key=key,
+                                        UpdateExpression=update_expression,
+                                        ConditionExpression=condition_expression,
+                                        ExpressionAttributeValues=exp_attribute_values)
+
+    elif exp_attribute_names and exp_attribute_values:
+        response = dynamodb.update_item(TableName=table_name, Key=key,
+                                        UpdateExpression=update_expression,
+                                        ExpressionAttributeNames=exp_attribute_names,
+                                        ExpressionAttributeValues=exp_attribute_values)
+
+    elif exp_attribute_names:
+        response = dynamodb.update_item(TableName=table_name, Key=key,
+                                        UpdateExpression=update_expression,
+                                        ExpressionAttributeNames=exp_attribute_names)
+
+    elif exp_attribute_values:
+        response = dynamodb.update_item(TableName=table_name, Key=key,
+                                        UpdateExpression=update_expression,
+                                        ExpressionAttributeValues=exp_attribute_values)
+
+    else:
+        response = dynamodb.update_item(TableName=table_name, Key=key, UpdateExpression=update_expression)
+    return response
+
+
+def read_practice():
     table_name = 'GayatriOrganicStores'
 
     # read_specific_item
@@ -129,7 +202,7 @@ if __name__ == '__main__':
     print(data5)
 
     # arguments - table,filter_condition
-    read_all_the_items_scan_filter_args = ['attribute_exists(Employees.E5)']
+    read_all_the_items_scan_filter_args = ['attribute_exists(Products.P24)']
     data6 = read_all_the_items_scan(table_name, filter_condition=read_all_the_items_scan_filter_args)
     print(data6)
 
@@ -147,7 +220,7 @@ if __name__ == '__main__':
 
     # arguments - table,attributes,filter_condition
     read_all_the_items_scan_attributes_args = ['StorePlace', 'StoreID', 'Employees']
-    read_all_the_items_scan_filter_args = ['attribute_exists(Employees.E5)']
+    read_all_the_items_scan_filter_args = ['attribute_exists(Products.P5)']
     data9 = read_all_the_items_scan(table_name, attributes=read_all_the_items_scan_attributes_args,
                                     filter_condition=read_all_the_items_scan_filter_args)
     print(data9)
@@ -180,3 +253,142 @@ if __name__ == '__main__':
                                      attribute_names=read_all_the_items_scan_attribute_names_args,
                                      attribute_values=read_all_the_items_scan_attribute_values_args)
     print(data12)
+
+    read_using_execute_statement_partiql_string = "select StorePlace,StoreID,Employees from GayatriOrganicStores" \
+                                                  " where StorePlace=? and StoreID=?"
+    read_using_execute_statement_partiql_params = [{'S': 'Bhimavaram'}, {'N': '1'}, {'S': '15'}]
+    data13 = read_using_execute_statement(read_using_execute_statement_partiql_string,
+                                          read_using_execute_statement_partiql_params)
+    print(data13)
+
+
+def update_practice():
+
+    table = "GayatriOrganicStores"
+
+    # Adding new employee to a particular store
+    update_using_update_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Bhimavaram', 'StoreID': 2})['M']
+    update_using_update_item_update_expression_args = "set Employees.#id = :val"
+    update_using_update_item_exp_attribute_names = {'#id': '103'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': {'Name': 'tarunkumar',
+                                                                                         'PhoneNo': '9988998899'}})['M']
+    data1 = update_using_update_item(table, update_using_update_item_key_args,
+                                     update_expression=update_using_update_item_update_expression_args,
+                                     exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                     exp_attribute_values=update_using_update_item_exp_attribute_values)
+    print(data1)
+
+    # Adding new Product to particular store
+    update_using_update_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Gopalapuram', 'StoreID': 1})['M']
+    update_using_update_item_update_expression_args = "set Products.#id = :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P25'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': {'Name': 'Black Wheat',
+                                                                                         'Category': 'Rice',
+                                                                                         'Quantity': 0,
+                                                                                         'Price': 0}})['M']
+    data2_1 = update_using_update_item(table, update_using_update_item_key_args,
+                                       update_expression=update_using_update_item_update_expression_args,
+                                       exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                       exp_attribute_values=update_using_update_item_exp_attribute_values)
+    print(data2_1)
+
+    update_using_update_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Gopalapuram', 'StoreID': 1})['M']
+    update_using_update_item_update_expression_args = "set Products.#id = :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P25'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': {'Name': 'Black Wheat',
+                                                                                         'Category': 'Rice',
+                                                                                         'Quantity': 20,
+                                                                                         'Price': 100,
+                                                                                         'Can Sell': 'Y'}})['M']
+    data2_2 = update_using_update_item(table, update_using_update_item_key_args,
+                                       update_expression=update_using_update_item_update_expression_args,
+                                       exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                       exp_attribute_values=update_using_update_item_exp_attribute_values)
+    print(data2_2)
+
+    # Increasing quantity for particular product in particular store.
+    update_using_update_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Gopalapuram', 'StoreID': 1})['M']
+    update_using_update_item_update_expression_args = "add Products.#id.Quantity :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P25'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': 20})['M']
+    data3 = update_using_update_item(table, update_using_update_item_key_args,
+                                       update_expression=update_using_update_item_update_expression_args,
+                                       exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                       exp_attribute_values=update_using_update_item_exp_attribute_values)
+    print(data3)
+
+    update_using_update_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Gopalapuram', 'StoreID': 1})['M']
+    update_using_update_item_update_expression_args = "add Products.#id.Quantity :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P25'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': 20, ':cval': 100})['M']
+    update_using_update_item_update_conditional_args = 'Products.#id.Quantity < :cval'
+    try:
+        data3_1 = update_using_update_item(table, update_using_update_item_key_args,
+                                           update_expression=update_using_update_item_update_expression_args,
+                                           condition_expression=update_using_update_item_update_conditional_args,
+                                           exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                           exp_attribute_values=update_using_update_item_exp_attribute_values)
+        print(data3_1)
+    except Exception as e:
+        print(e)
+
+    # Decreasing quantity for particular product in particular store.
+    update_using_update_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Gopalapuram', 'StoreID': 1})['M']
+    update_using_update_item_update_expression_args = "add Products.#id.Quantity :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P25'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': -10})['M']
+    data4 = update_using_update_item(table, update_using_update_item_key_args,
+                                     update_expression=update_using_update_item_update_expression_args,
+                                     exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                     exp_attribute_values=update_using_update_item_exp_attribute_values)
+    print(data4)
+
+    # Adding new Product in all stores
+    update_using_update_item_update_expression_args = "set Products.#id = :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P26'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': {'Name': 'Black Wheat',
+                                                                                         'Category': 'Rice',
+                                                                                         'Quantity': 0,
+                                                                                         'Price': 0}})['M']
+    update_using_update_item_update_conditional_args = 'attribute_exists(Products)'
+    read_all_the_items_scan_attributes_args = ['StorePlace', 'StoreID']
+    keys = read_all_the_items_scan(table, attributes=read_all_the_items_scan_attributes_args)
+    for key in keys:
+        try:
+            update_using_update_item_key_args = convert_to_dynamodb_format(key)['M']
+            data5 = update_using_update_item(table, update_using_update_item_key_args,
+                                             update_expression=update_using_update_item_update_expression_args,
+                                             condition_expression=update_using_update_item_update_conditional_args,
+                                             exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                             exp_attribute_values=update_using_update_item_exp_attribute_values)
+            print(key, data5)
+        except Exception as e:
+            print(key, e)
+
+    # Increasing quantity for particular product in all stores.
+    update_using_update_item_update_expression_args = "add Products.#id.Quantity :val"
+    update_using_update_item_exp_attribute_names = {'#id': 'P26'}
+    update_using_update_item_exp_attribute_values = convert_to_dynamodb_format({':val': 10})['M']
+    keys = read_all_the_items_scan(table, attributes=read_all_the_items_scan_attributes_args)
+    for key in keys:
+        try:
+            update_using_update_item_key_args = convert_to_dynamodb_format(key)['M']
+            data6 = update_using_update_item(table, update_using_update_item_key_args,
+                                             update_expression=update_using_update_item_update_expression_args,
+                                             exp_attribute_names=update_using_update_item_exp_attribute_names,
+                                             exp_attribute_values=update_using_update_item_exp_attribute_values)
+            print(key, data6)
+        except Exception as e:
+            print(key, e)
+
+    pass
+
+
+if __name__ == '__main__':
+    """
+    Uncomment one by one while running.
+    """
+    # read_practice()
+    # update_practice()
+
+    pass
