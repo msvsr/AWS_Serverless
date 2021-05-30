@@ -1,5 +1,5 @@
 """
-CREATE
+CREATE -  Done in upload_data.py
 READ
 1. Reading specific item
 2. Reading all the items
@@ -11,6 +11,8 @@ UPDATE
 5. Increasing quantity for particular product in all stores.
 6. Decreasing quantity for particular product in particular store.
 DELETE
+1. Delete Store.
+2. Delete an item if Products does not exists.
 """
 
 import boto3
@@ -173,6 +175,26 @@ def update_using_update_item(table_name, key, update_expression, condition_expre
 
     else:
         response = dynamodb.update_item(TableName=table_name, Key=key, UpdateExpression=update_expression)
+    return response
+
+
+def delete_using_delete_item(table_name, key, condition_expression=None, exp_attribute_names=None,
+                             exp_attribute_values=None):
+
+    dynamodb = boto3.client('dynamodb')
+
+    if condition_expression and exp_attribute_names and exp_attribute_values:
+        response = dynamodb.delete_item(TableName=table_name, Key=key, ConditionExpression=condition_expression,
+                                        ExpressionAttributeNames=exp_attribute_names,
+                                        ExpressionAttributeValues=exp_attribute_values)
+
+    elif condition_expression and exp_attribute_names:
+        response = dynamodb.delete_item(TableName=table_name, Key=key, ConditionExpression=condition_expression,
+                                        ExpressionAttributeNames=exp_attribute_names)
+
+    else:
+        response = dynamodb.delete_item(TableName=table_name, Key=key)
+
     return response
 
 
@@ -384,11 +406,27 @@ def update_practice():
     pass
 
 
+def delete_practice():
+
+    table_name = 'GayatriOrganicStores'
+
+    delete_using_delete_item_key_args=convert_to_dynamodb_format({'StorePlace': 'Tanuku', 'StoreID': 1})['M']
+    data1 = delete_using_delete_item(table_name,delete_using_delete_item_key_args)
+    print(data1)
+
+    delete_using_delete_item_key_args = convert_to_dynamodb_format({'StorePlace': 'Bhimavaram', 'StoreID': 1})['M']
+    delete_using_delete_item_condition_args = 'attribute_not_exists(Products)'
+    data2 = delete_using_delete_item(table_name, delete_using_delete_item_key_args,
+                                     condition_expression=delete_using_delete_item_condition_args)
+    print(data2)
+
+
 if __name__ == '__main__':
     """
     Uncomment one by one while running.
     """
     # read_practice()
     # update_practice()
+    delete_practice()
 
     pass
