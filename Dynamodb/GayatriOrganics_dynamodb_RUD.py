@@ -1,5 +1,5 @@
 """
-CREATE -  Done in upload_data.py
+CREATE -  Done in GayatriOrganics_dynamodb_C.py
 READ
 1. Reading specific item
 2. Reading all the items
@@ -427,6 +427,6 @@ if __name__ == '__main__':
     """
     # read_practice()
     # update_practice()
-    delete_practice()
+    # delete_practice()
 
     pass
