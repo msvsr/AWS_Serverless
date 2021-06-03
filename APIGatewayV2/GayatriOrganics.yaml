@@ -1,0 +1,8 @@
+openapi: 3.0.0
+info:
+  title: Sri Gayatri Organics
+  description: This api will let access Sri Gayatri Organics stores data.
+  contact:
+    name: Medapati Satya Vijaya Saradhi Reddy
+    email: msvsr.medapati@outlook.com
+  version: 1.0.0
