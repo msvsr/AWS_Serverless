@@ -1,0 +1,302 @@
+---
+swagger: "2.0"
+info:
+  description: "This API is used to do operations on SriGayatriOrganicStores"
+  version: "2021-06-04T11:09:45Z"
+  title: "SriGayatriOrganicStores"
+host: "bcqddtun9c.execute-api.ap-south-1.amazonaws.com"
+basePath: "/v1"
+schemes:
+- "https"
+paths:
+  /gayatriorganics:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      security:
+      - sigv4: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials: "arn:aws:iam::980367155655:role/api_gateway_dynamodb"
+        uri: "arn:aws:apigateway:ap-south-1:dynamodb:action/Scan"
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/json: "{\r\n\"TableName\":\"GayatriOrganicStores\",\r\n\"ProjectionExpression\"\
+            :\"StoreID,StorePlace\"\r\n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+  /gayatriorganics/{storeplace}:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "storeplace"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      security:
+      - srigayatriorganics: []
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials: "arn:aws:iam::980367155655:role/api_gateway_dynamodb"
+        uri: "arn:aws:apigateway:ap-south-1:dynamodb:action/Scan"
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/json: "{\r\n\"TableName\":\"GayatriOrganicStores\",\r\n\"FilterExpression\"\
+            :\"StorePlace= :place\",\r\n\"ExpressionAttributeValues\":{\":place\"\
+            :{\"S\":\"$input.params('storeplace')\"}}\r\n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: "##  See http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html\n\
+                ##  This template will pass through all parameters including path,\
+                \ querystring, header, stage variables, and context through to the\
+                \ integration endpoint via the body/payload\n#set($allParams = $input.params())\n\
+                {\n\"body-json\" : $input.json('$'),\n\"params\" : {\n#foreach($type\
+                \ in $allParams.keySet())\n    #set($params = $allParams.get($type))\n\
+                \"$type\" : {\n    #foreach($paramName in $params.keySet())\n    \"\
+                $paramName\" : \"$util.escapeJavaScript($params.get($paramName))\"\
+                \n        #if($foreach.hasNext),#end\n    #end\n}\n    #if($foreach.hasNext),#end\n\
+                #end\n},\n\"stage-variables\" : {\n#foreach($key in $stageVariables.keySet())\n\
+                \"$key\" : \"$util.escapeJavaScript($stageVariables.get($key))\"\n\
+                \    #if($foreach.hasNext),#end\n#end\n},\n\"context\" : {\n    \"\
+                account-id\" : \"$context.identity.accountId\",\n    \"api-id\" :\
+                \ \"$context.apiId\",\n    \"api-key\" : \"$context.identity.apiKey\"\
+                ,\n    \"authorizer-principal-id\" : \"$context.authorizer.principalId\"\
+                ,\n    \"caller\" : \"$context.identity.caller\",\n    \"cognito-authentication-provider\"\
+                \ : \"$context.identity.cognitoAuthenticationProvider\",\n    \"cognito-authentication-type\"\
+                \ : \"$context.identity.cognitoAuthenticationType\",\n    \"cognito-identity-id\"\
+                \ : \"$context.identity.cognitoIdentityId\",\n    \"cognito-identity-pool-id\"\
+                \ : \"$context.identity.cognitoIdentityPoolId\",\n    \"http-method\"\
+                \ : \"$context.httpMethod\",\n    \"stage\" : \"$context.stage\",\n\
+                \    \"source-ip\" : \"$context.identity.sourceIp\",\n    \"user\"\
+                \ : \"$context.identity.user\",\n    \"user-agent\" : \"$context.identity.userAgent\"\
+                ,\n    \"user-arn\" : \"$context.identity.userArn\",\n    \"request-id\"\
+                \ : \"$context.requestId\",\n    \"resource-id\" : \"$context.resourceId\"\
+                ,\n    \"resource-path\" : \"$context.resourcePath\"\n    }\n}\n"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+  /gayatriorganics/{storeplace}/{storeid}:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "storeplace"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "storeid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials: "arn:aws:iam::980367155655:role/api_gateway_dynamodb"
+        uri: "arn:aws:apigateway:ap-south-1:dynamodb:action/GetItem"
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/json: "{\n\"TableName\":\"GayatriOrganicStores\",\n\"Key\":\
+            \ {\n       \"StorePlace\":{\"S\":\"$input.params('storeplace')\"},\n\
+            \       \"StoreID\": {\"N\":\"$input.params('storeid')\"}\n       }\n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
+    post:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "storeplace"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "storeid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials: "arn:aws:iam::980367155655:role/api_gateway_dynamodb"
+        uri: "arn:aws:apigateway:ap-south-1:dynamodb:action/PutItem"
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/json: "{ \r\n    \"TableName\": \"GayatriOrganicStores\",\r\n\
+            \    \"Item\": {\r\n\t\"StorePlace\": {\r\n            \"S\": \"$input.params('storeplace')\"\
+            \r\n            },\r\n        \"StoreID\": {\r\n            \"N\": \"\
+            $input.params('storeid')\"\r\n            }\r\n    },\r\n    \"ConditionExpression\"\
+            : \"attribute_not_exists(StorePlace) and attribute_not_exists(StoreID)\"\
+            \r\n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
+    delete:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "storeplace"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "storeid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials: "arn:aws:iam::980367155655:role/api_gateway_dynamodb"
+        uri: "arn:aws:apigateway:ap-south-1:dynamodb:action/DeleteItem"
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/json: "{\n\"TableName\":\"GayatriOrganicStores\",\n\"Key\":\
+            \ {\n       \"StorePlace\":{\"S\":\"$input.params('storeplace')\"},\n\
+            \       \"StoreID\": {\"N\":\"$input.params('storeid')\"}\n       },\n\
+            \"ConditionExpression\": \"attribute_not_exists(Products) and attribute_not_exists(Employees)\"\
+            \n}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
+    options:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        requestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+securityDefinitions:
+  srigayatriorganics:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "cognito_user_pools"
+    x-amazon-apigateway-authorizer:
+      providerARNs:
+      - "arn:aws:cognito-idp:ap-south-1:980367155655:userpool/ap-south-1_klbfeBDTr"
+      type: "cognito_user_pools"
+  sigv4:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "awsSigv4"
+definitions:
+  Empty:
+    type: "object"
+    title: "Empty Schema"
