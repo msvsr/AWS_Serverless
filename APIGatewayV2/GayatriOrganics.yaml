@@ -6,3 +6,20 @@ info:
     name: Medapati Satya Vijaya Saradhi Reddy
     email: msvsr.medapati@outlook.com
   version: 1.0.0
+paths:
+  /srigayatriorganics:
+    get:
+      responses:
+        200:
+          description: gives response if 200
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        credentials: "arn:aws:iam::980367155655:role/api_gateway_dynamodb"
+        uri: "arn:aws:apigateway:ap-south-1:dynamodb:action/Scan"
+        responses:
+          default:
+            statusCode: "200"
+        requestTemplates:
+          application/json: "{'TableName':'GayatriOrganicStores','ProjectionExpression':'StoreID,StorePlace'}"
+        passthroughBehavior: "when_no_templates"
+        type: "aws"
